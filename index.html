@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Happy Birthday Mahi</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@0,400;1,600&family=Quicksand:wght@300;400&display=swap" rel="stylesheet">
+        <style>
+            body, html {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background-color: #0a0a0a;
+                font-family: 'Quicksand', sans-serif;
+            }
+
+            .video-container {
+                position: relative;
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .scene {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 2.5s ease-in-out;
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                overflow: hidden;
+            }
+
+            .scene.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .scene-bg {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                filter: sepia(0.2) saturate(1.2) brightness(0.9) contrast(1.1);
+                transition: transform 10s linear;
+            }
+
+            /* Ken Burns Effect */
+            .scene.active .scene-bg {
+                transform: scale(1.2) translate(-2%, -2%);
+            }
+
+            /* Dreamy Overlays */
+            .overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.6) 100%);
+                z-index: 10;
+            }
+
+            .light-leak {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 30%, rgba(255, 200, 150, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, rgba(255, 150, 150, 0.1) 0%, transparent 50%);
+                mix-blend-mode: screen;
+                z-index: 11;
+                pointer-events: none;
+                animation: drift 20s infinite alternate;
+            }
+
+            @keyframes drift {
+                from {
+                    opacity: 0.3;
+                    transform: scale(1);
+                }
+                to {
+                    opacity: 0.6;
+                    transform: scale(1.1);
+                }
+            }
+
+            /* Text Styles */
+            .text-overlay {
+                position: relative;
+                z-index: 20;
+                text-align: center;
+                padding: 2rem;
+                max-width: 80%;
+                color: white;
+                text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            }
+
+            .main-text {
+                font-family: 'Playfair Display', serif;
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 1.5s ease-out 1s;
+            }
+
+            .scene.active .main-text {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .sub-text {
+                font-family: 'Dancing Script', cursive;
+                font-size: 1.8rem;
+                color: #ffd7ba;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 1.5s ease-out 1.5s;
+            }
+
+            .scene.active .sub-text {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Controls */
+            #start-screen {
+                position: fixed;
+                inset: 0;
+                background: #000;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 100;
+                color: white;
+                text-align: center;
+            }
+
+            .play-btn {
+                background: linear-gradient(45deg, #d4af37, #f9e29b);
+                color: #2b1d0e;
+                padding: 1rem 3rem;
+                border-radius: 999px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+                margin-top: 2rem;
+            }
+
+            .play-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+            }
+
+            .final-message {
+                font-family: 'Playfair Display', serif;
+                font-size: 3.5rem;
+                line-height: 1.2;
+            }
+
+            /* Progress Bar */
+            .progress-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                height: 3px;
+                background: #d4af37;
+                width: 0%;
+                z-index: 50;
+                transition: width 0.5s linear;
+            }
+
+            #scene-5 .scene-bg {
+                object-position: 30% 80%;  /* shift image slightly to right */
+            }
+            
+            #scene-2 .scene-bg {
+                object-position: 30% 40%;  /* shift image slightly to right */
+            }
+        </style>
+    </head>
+    <body>
+
+        <div id="start-screen">
+            <h1 class="text-4xl font-serif italic mb-4">A Journey of Us</h1>
+            <p class="text-xl text-gray-400">For my beautiful Mahi</p>
+            <button class="play-btn" onclick="startVideo()">Watch Our Story</button>
+        </div>
+
+        <div class="video-container">
+            <div class="light-leak"></div>
+            <div class="progress-bar" id="progress"></div>
+
+            <!-- Scene 1: First Seen -->
+            <div class="scene" id="scene-0">
+                <img src="1.jpeg" class="scene-bg" alt="First seen">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">The day I first saw you, Mahi…</p>
+                    <p class="sub-text">My world changed forever.</p>
+                </div>
+            </div>
+
+            <!-- Scene 2: Got Married -->
+            <div class="scene" id="scene-1">
+                <img src="2.jpeg" class="scene-bg" alt="Wedding">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">From that moment…</p>
+                    <p class="sub-text">To becoming mine forever.</p>
+                </div>
+            </div>
+
+            <!-- Scene 3: Solo 1 -->
+            <div class="scene" id="scene-2">
+                <img src="3.jpeg" class="scene-bg" alt="Solo 1">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">Your smile is my happiness.</p>
+                </div>
+            </div>
+
+            <!-- Scene 4: Solo 2 -->
+            <div class="scene" id="scene-3">
+                <img src="4.jpeg" class="scene-bg" alt="Solo 2">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">You are the most beautiful part of my life.</p>
+                </div>
+            </div>
+
+            <!-- Scene 5: Memory 1 -->
+            <div class="scene" id="scene-4">
+                <img src="5.jpeg" class="scene-bg" alt="Memory 1">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">Every moment with you…</p>
+                    <p class="sub-text">is a memory I treasure.</p>
+                </div>
+            </div>
+
+            <!-- Scene 6: Memory 2 -->
+            <div class="scene" id="scene-5">
+                <img src="6.jpeg" class="scene-bg" alt="Memory 2">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">With you…</p>
+                    <p class="sub-text">life feels complete.</p>
+                </div>
+            </div>
+
+            <!-- Scene 7: Special Memory (Waterfall) -->
+            <div class="scene" id="scene-6">
+                <img src="7.jpeg" class="scene-bg" alt="Waterfall">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">A connection so deep...</p>
+                    <p class="sub-text">Nothing else matters when I'm with you.</p>
+                </div>
+            </div>
+
+            <!-- Scene 8: Pregnancy -->
+            <div class="scene" id="scene-7">
+                <img src="8.jpeg" class="scene-bg" alt="Pregnancy">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">Mahi, you gave me the most precious gift of life.</p>
+                </div>
+            </div>
+
+            <!-- Scene 9: Baby Born -->
+            <div class="scene" id="scene-8">
+                <img src="9.jpeg" class="scene-bg" alt="Baby born">
+                <div class="overlay"></div>
+                <div class="text-overlay">
+                    <p class="main-text">Our love…</p>
+                    <p class="sub-text">became a new life.</p>
+                </div>
+            </div>
+
+            <!-- Scene 10: Complete Family -->
+            <div class="scene" id="scene-9">
+                <img src="10.jpeg" class="scene-bg" alt="Family">
+                <div class="overlay" style="background: rgba(0,0,0,0.4)"></div>
+                <div class="text-overlay">
+                    <p class="main-text">Mahi, my world is you…</p>
+                    <p class="sub-text">and our beautiful family.</p>
+                </div>
+            </div>
+
+            <!-- Final Scene: Message -->
+            <div class="scene" id="scene-10" style="background: black;">
+                <div class="text-overlay final-message">
+                    <p class="main-text" style="font-size: 3.5rem;">Happy Birthday Mahi ❤️</p>
+                    <p class="sub-text" style="font-size: 2rem;">You Mean Everything To Me</p>
+                    <p class="sub-text" style="font-size: 1.5rem; margin-top: 2rem; color: #aaa;">Forever Yours...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Player (Soft Romantic Piano) -->
+        <audio id="bg-music" loop>
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" type="audio/mpeg">
+        </audio>
+
+        <script>
+            let currentScene = 0;
+            const totalScenes = 11;
+            const sceneDuration = 8000; // 8 seconds per photo for a cinematic feel
+
+            function startVideo() {
+                document.getElementById('start-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    document.getElementById('bg-music').play();
+                    showNextScene();
+                }, 1000);
+            }
+
+            function showNextScene() {
+                if (currentScene >= totalScenes)
+                    return;
+
+                // Remove active class from all
+                document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+
+                // Add active to current
+                const activeScene = document.getElementById(`scene-${currentScene}`);
+                if (activeScene) {
+                    activeScene.classList.add('active');
+                }
+
+                // Update Progress
+                const progress = ((currentScene + 1) / totalScenes) * 100;
+                document.getElementById('progress').style.width = `${progress}%`;
+
+                currentScene++;
+
+                if (currentScene < totalScenes) {
+                    setTimeout(showNextScene, sceneDuration);
+                }
+            }
+        </script>
+    </body>
+</html>
